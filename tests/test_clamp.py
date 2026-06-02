@@ -1,29 +1,10 @@
-import os, stat, tempfile
-from pathlib import Path
-import pytest
 from conftest import render_scad, measure_stl
 
-# The openGrid snap geometry (BOSL2 tag_diff nubs) produces T-junction edges when
-# exported by the Manifold backend, which trimesh flags as non-watertight.
-# CGAL performs full Nef-polyhedron Boolean evaluation that eliminates them.
-# Use a thin wrapper so render_scad picks up CGAL for all tests in this module.
-@pytest.fixture(autouse=True, scope="module")
-def _cgal_backend(tmp_path_factory):
-    wrapper = tmp_path_factory.mktemp("wrap") / "openscad_cgal"
-    wrapper.write_text(
-        "#!/bin/sh\n"
-        'exec /Applications/OpenSCAD-2026.01.14.app/Contents/MacOS/OpenSCAD'
-        ' --backend CGAL "$@"\n'
-    )
-    wrapper.chmod(wrapper.stat().st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
-    old = os.environ.get("OPENSCAD_BIN")
-    os.environ["OPENSCAD_BIN"] = str(wrapper)
-    yield
-    if old is None:
-        os.environ.pop("OPENSCAD_BIN", None)
-    else:
-        os.environ["OPENSCAD_BIN"] = old
-
+# NOTE: watertight checks on snap-containing geometry use backend="CGAL". The openGrid snap
+# (mitufy BOSL2 nub geometry) leaves T-junction coincident faces in Manifold-backend STL output
+# that trip trimesh.is_watertight, even though OpenSCAD's Manifold backend reports NoError (so it
+# renders fine on MakerWorld). CGAL's full Nef Boolean eval yields a clean mesh trimesh can verify.
+# See README "Compatibility notes". The default-backend (Manifold) render still succeeds = MakerWorld parity.
 
 LIB = '''
 use <clamp.scad>
@@ -33,10 +14,17 @@ include <BOSL2/std.scad>
 def test_clamp_body_is_one_watertight_solid(tmp_path):
     src = LIB + ('clamp_body(mount_system="openGrid snap", board_type="Lite", '
                  'bore=10, preset="openGrid standard", socket_height=14, clearance=0.4);')
-    m = measure_stl(render_scad(src, {}, tmp_path))
+    m = measure_stl(render_scad(src, {}, tmp_path, backend="CGAL"))
     assert m["watertight"] is True
     assert m["bounds"][0][2] <= -3.5    # down through the lite snap (~ -4)
     assert m["bounds"][1][2] >= 13.5    # up through the socket top (~14)
+
+def test_clamp_body_renders_on_makerworld_backend(tmp_path):
+    # MakerWorld parity: the body must render without error on the default (Manifold) backend.
+    src = LIB + ('clamp_body(mount_system="openGrid snap", board_type="Lite", '
+                 'bore=10, preset="openGrid standard", socket_height=14, clearance=0.4);')
+    m = measure_stl(render_scad(src, {}, tmp_path))   # default backend = Manifold (no raise = renders OK)
+    assert m["bbox"][2] > 13.5
 
 def test_clamp_body_cable_channel_open_along_y(tmp_path):
     src = LIB + ('union(){ clamp_body(mount_system="openGrid snap", board_type="Lite", '
@@ -47,5 +35,5 @@ def test_clamp_body_cable_channel_open_along_y(tmp_path):
 
 def test_ring_nut_watertight(tmp_path):
     src = LIB + 'ring_nut(bore=10, preset="openGrid standard", height=8, clearance=0.4, grip="Flats");'
-    m = measure_stl(render_scad(src, {}, tmp_path))
+    m = measure_stl(render_scad(src, {}, tmp_path, backend="CGAL"))
     assert m["watertight"] is True

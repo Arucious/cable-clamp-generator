@@ -27,8 +27,15 @@ def _fmt(v):
     if isinstance(v, str):   return f'"{v}"'
     return repr(v)
 
-def _run(src_path, params, out, fast):
-    cmd = [_openscad_bin(), "-o", str(out), "--export-format", "binstl"]
+def _run(src_path, params, out, fast, backend=None):
+    # backend=None -> OpenSCAD default (Manifold), which is what MakerWorld uses (render-success = MW parity).
+    # backend="CGAL" -> full Nef Boolean eval; cleans the T-junction coincident faces that base_snap's
+    #   nub geometry leaves in Manifold STL output (those trip trimesh.is_watertight even though OpenSCAD
+    #   Manifold reports NoError). Use CGAL only for trimesh watertight VERIFICATION, not for parity.
+    cmd = [_openscad_bin()]
+    if backend:
+        cmd += ["--backend", backend]
+    cmd += ["-o", str(out), "--export-format", "binstl"]
     if fast:
         cmd += ["-D", "$fn=24"]
     for k, v in params.items():
@@ -39,15 +46,16 @@ def _run(src_path, params, out, fast):
         raise subprocess.CalledProcessError(res.returncode, cmd, res.stdout, res.stderr)
     return out
 
-def render_scad(source: str, params: dict, tmp_path, fast=True) -> Path:
-    """Render an OpenSCAD source STRING. Path-less `use <thread.scad>` resolves via OPENSCADPATH=CC."""
+def render_scad(source: str, params: dict, tmp_path, fast=True, backend=None) -> Path:
+    """Render an OpenSCAD source STRING. Path-less `use <thread.scad>` resolves via OPENSCADPATH=CC.
+    Pass backend="CGAL" for reliable trimesh watertight checks on snap-containing geometry."""
     src = Path(tmp_path) / "model.scad"; src.write_text(source)
-    return _run(src, params, Path(tmp_path) / "out.stl", fast)
+    return _run(src, params, Path(tmp_path) / "out.stl", fast, backend)
 
-def render_file(scad_file, params, tmp_path, fast=True) -> Path:
+def render_file(scad_file, params, tmp_path, fast=True, backend=None) -> Path:
     """Render an actual repo .scad file IN PLACE (path relative to REPO) so its own
     path-less includes resolve from its dir (cable_clamp/)."""
-    return _run(REPO / scad_file, params, Path(tmp_path) / "out.stl", fast)
+    return _run(REPO / scad_file, params, Path(tmp_path) / "out.stl", fast, backend)
 
 def measure_stl(stl_path) -> dict:
     mesh = trimesh.load(str(stl_path))
