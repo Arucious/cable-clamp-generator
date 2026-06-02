@@ -1876,6 +1876,7 @@ module multiconnectBack(backWidth, backHeight, distanceBetweenSlots,
 
 // ===================== derived values + geometry (main) =====================
 /* [Hidden] */
+Preview_Warnings = true;   // render an in-preview label if the bore is clamped (tests set false)
 _footprint = mount_face_clear_xy(Mount_System, MB_Slots, 1);
 _preset    = Thread_Preset == "Custom" ? "Custom" : Thread_Preset;
 _major     = Thread_Preset == "Custom" ? Thread_Major_Diameter : 0;
@@ -1906,6 +1907,16 @@ module _nut()
     ring_nut(bore=_bore, preset=_preset, height=_nut_h,
              clearance=Thread_Clearance, major_override=_major, grip=Nut_Grip, profile=_profile);
 
+// Visible warning in the MakerWorld 3D preview when the requested bore was clamped to fit the cell.
+// (echo() isn't surfaced to MakerWorld users, so we float a red label above the part instead.)
+module _bore_warning()
+    color([1, 0, 0])
+        translate([0, 0, _socket_h + 6])
+            linear_extrude(1)
+                text(str("BORE CLAMPED TO ", _bore, "mm - exceeds ", Mount_System, " cell"),
+                     size=3, halign="center", valign="center");
+
 if (Part == "Body") _body();
 else if (Part == "Ring Nut") _nut();
 else { _body(); right(_footprint + 8) _nut(); }
+if (_bore < _bore_req && Preview_Warnings) _bore_warning();
