@@ -42,11 +42,14 @@ know where the bodies are buried. The README links to this file.
   export that part via CGAL. So far Manifold reports NoError, so this is a trimesh-strictness artifact, not a
   real defect.
 
-## 5. "Knurl" ring-nut grip is currently a chamfered cylinder
-- **What:** the `Nut_Grip = "Knurl"` option renders a plain chamfered cylinder, not a true knurled texture.
-- **Why:** BOSL2 surface `texture` was slow and prone to non-manifold artifacts on a small ring. "Flats" (the
-  default) and "Wings" are real; "Knurl" is a placeholder.
-- **Risk / watch:** purely cosmetic. Revisit with a manifold-safe knurl if desired.
+## 5. "Knurl" ring-nut grip — real texture (resolved)
+- **What:** `Nut_Grip = "Knurl"` uses BOSL2's `trunc_diamonds` surface texture (~2mm flat-topped diamonds,
+  0.45mm deep) on the grip band. Flat-topped diamonds print cleanly (no unprintable sharp tips).
+- **History:** an earlier build used a plain chamfered-cylinder placeholder on the assumption BOSL2 texture was
+  slow / non-manifold. Verified false on the pinned toolchain: it renders in ~0.15s and is **manifold + watertight
+  on the Manifold backend** (MakerWorld's). Now implemented for real (test: `test_nut_plug_knurl_grip_watertight`).
+- **Risk / watch:** none significant; if a printer struggles with the fine texture, lower `tex_size`/`tex_depth`
+  in `thread.scad` `_grip`.
 
 ## 6. Toolchain pins (for MakerWorld parity)
 - **OpenSCAD 2026.01.14** (matches MakerWorld's renderer) and **BOSL2 @ 7e5dfe5 (2026-01-18)**, installed locally.

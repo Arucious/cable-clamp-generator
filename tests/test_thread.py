@@ -22,3 +22,10 @@ def test_nut_plug_height_and_watertight(tmp_path):
     m = measure_stl(render_scad(src, {}, tmp_path))
     assert m["bbox"][2] >= 8.0
     assert m["watertight"] is True
+
+def test_nut_plug_knurl_grip_watertight(tmp_path):
+    # The "Knurl" grip is a real trunc_diamonds texture; it must render manifold/watertight.
+    src = LIB + 'nut_plug(bore=10, preset="openGrid standard", height=8, clearance=0.4, grip="Knurl");'
+    m = measure_stl(render_scad(src, {}, tmp_path, backend="CGAL"))
+    assert m["bbox"][2] >= 8.0
+    assert m["watertight"] is True

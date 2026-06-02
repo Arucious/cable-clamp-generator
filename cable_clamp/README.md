@@ -102,7 +102,7 @@ In v1, the openConnect mount uses a single slot with a fixed slide-on orientatio
 | Parameter | Default | Description |
 |---|---|---|
 | `Nut_Height` | `9` | Height of the ring nut in mm. Must be at least 3× `Thread_Pitch` (ensures ≥3 thread turns). |
-| `Nut_Grip` | `"Flats"` | Outer grip style: `Flats` (hex-flat sides), `Knurl` (chamfered cylinder, placeholder — see Compatibility Notes), or `Wings` (extended grip tabs) |
+| `Nut_Grip` | `"Flats"` | Outer grip style: `Flats` (hex-flat sides), `Knurl` (diamond-knurled band), or `Wings` (extended grip tabs) |
 
 ### Output
 
@@ -134,7 +134,7 @@ Key deviations from upstream libraries — see [`../COMPATIBILITY_NOTES.md`](../
 
 4. **openGrid snap T-junctions: watertight on CGAL, not Manifold.** The Manifold backend renders snap geometry without error (MakerWorld is fine), but trimesh's strict watertight check requires the CGAL backend. This is a trimesh-strictness artifact, not a real print defect.
 
-5. **"Knurl" grip is a placeholder.** `Nut_Grip = "Knurl"` currently renders a plain chamfered cylinder. `Flats` and `Wings` are fully implemented.
+5. **"Knurl" grip uses a `trunc_diamonds` texture.** All three grips (`Flats`, `Wings`, `Knurl`) are fully implemented; the knurl is BOSL2's truncated-diamond texture (flat-topped diamonds for clean printing), verified manifold on the Manifold backend.
 
 6. **Toolchain pins.** Developed and tested on OpenSCAD 2026.01.14 and BOSL2 @ 7e5dfe5 (2026-01-18). BOSL2 is **not bundled** — MakerWorld provides it. Only the mitufy openGrid and cschneid MultiConnect `.scad` files are bundled in this repo.
 

@@ -35,7 +35,9 @@ module nut_plug(bore, preset, height, clearance=0.4, major_override=0, grip="Fla
 }
 
 module _grip(grip, d, h) {
-    if (grip == "Knurl")      cyl(d=d+1, h=h, chamfer=0.5, anchor=BOTTOM);
+    // Knurl: truncated-diamond texture — flat-topped diamonds print cleanly and render manifold
+    // on the Manifold backend (MakerWorld). ~2mm tiles, 0.45mm deep.
+    if (grip == "Knurl")      cyl(d=d+1, h=h, texture="trunc_diamonds", tex_size=[2,2], tex_depth=0.45, anchor=BOTTOM);
     else if (grip == "Wings") { cuboid([d*1.6, d*0.28, h], rounding=0.6, edges="Z", anchor=BOTTOM); cuboid([d*0.28, d*1.6, h], rounding=0.6, edges="Z", anchor=BOTTOM); }
     else /* Flats */          prismoid(size1=[d,d], size2=[d-1.5,d-1.5], h=h, anchor=BOTTOM);
 }
