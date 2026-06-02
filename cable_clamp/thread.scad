@@ -19,9 +19,10 @@ module threaded_socket(bore, preset, height, clearance=0.4, major_override=0, pr
     major = thread_major(bore, p, major_override);   // external thread crest OD
     difference() {
         _thread_rod(d=major, l=height, pitch=p, profile=profile, internal=false);
-        // cable channel along Y; starts above a thin base web so the fingers stay joined as a
-        // collet (and the cable rests just above the mount), and runs out the top.
-        up(0.8) cuboid([bore, major+2, height], anchor=BOTTOM);
+        // cable channel: open at the top + front/back, but seated on a solid BARREL_BASE that joins
+        // the two halves (retention design needs no flex), with filleted root corners for strength.
+        up(barrel_base()) cuboid([bore, major+2, height], anchor=BOTTOM,
+                                 rounding=barrel_fillet(), edges=BOTTOM);
     }
 }
 

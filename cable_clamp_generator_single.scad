@@ -68,6 +68,10 @@ OG_SNAP_WIDTH = 24.8;   // openGrid snap footprint (also the ring-OD ceiling for
 MIN_WALL      = 0.8;    // OG_MIN_WALL_WIDTH
 BARREL_WALL   = 1.6;    // finger wall: cable channel -> barrel thread root
 RING_WALL     = 1.6;    // ring wall: internal thread crest -> knurled outer surface
+// barrel base/fillet are functions (not bare constants) so `use <params.scad>` imports them into
+// thread.scad and the generator — `use` does NOT import top-level variables.
+function barrel_base()   = 3.0;   // solid barrel base joining the two halves below the channel (strength)
+function barrel_fillet() = 1.2;   // fillet radius at the channel-to-base (finger-root) corners (stress relief)
 
 function preset_pitch(preset) =
     preset == "Fine"   ? 2 :
@@ -110,9 +114,10 @@ module threaded_socket(bore, preset, height, clearance=0.4, major_override=0, pr
     major = thread_major(bore, p, major_override);   // external thread crest OD
     difference() {
         _thread_rod(d=major, l=height, pitch=p, profile=profile, internal=false);
-        // cable channel along Y; starts above a thin base web so the fingers stay joined as a
-        // collet (and the cable rests just above the mount), and runs out the top.
-        up(0.8) cuboid([bore, major+2, height], anchor=BOTTOM);
+        // cable channel: open at the top + front/back, but seated on a solid BARREL_BASE that joins
+        // the two halves (retention design needs no flex), with filleted root corners for strength.
+        up(barrel_base()) cuboid([bore, major+2, height], anchor=BOTTOM,
+                                 rounding=barrel_fillet(), edges=BOTTOM);
     }
 }
 
@@ -1885,7 +1890,9 @@ _profile   = Thread_Preset == "Custom" ? Thread_Profile : "Trapezoidal";
 _bore_req  = Cable_Bore_Diameter;
 _bore      = clamped_bore(_bore_req, _footprint, _pitch, Thread_Clearance, _major);
 _nut_h     = max(Nut_Height, 3 * _pitch);
-_socket_h  = max(_nut_h + 6, 14);   // barrel taller than the ring so the ring can travel down it
+// barrel taller than the ring (so it can travel down) AND tall enough that the cable channel
+// still fits above the thicker solid base
+_socket_h  = max(_nut_h + 6, 14, _bore + barrel_base() + 2);
 
 assert(ring_od(_bore, _pitch, Thread_Clearance, _major) <= _footprint + 0.001,
        "ring nut exceeds mount footprint after clamping");

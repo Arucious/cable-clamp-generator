@@ -10,6 +10,10 @@ OG_SNAP_WIDTH = 24.8;   // openGrid snap footprint (also the ring-OD ceiling for
 MIN_WALL      = 0.8;    // OG_MIN_WALL_WIDTH
 BARREL_WALL   = 1.6;    // finger wall: cable channel -> barrel thread root
 RING_WALL     = 1.6;    // ring wall: internal thread crest -> knurled outer surface
+// barrel base/fillet are functions (not bare constants) so `use <params.scad>` imports them into
+// thread.scad and the generator — `use` does NOT import top-level variables.
+function barrel_base()   = 3.0;   // solid barrel base joining the two halves below the channel (strength)
+function barrel_fillet() = 1.2;   // fillet radius at the channel-to-base (finger-root) corners (stress relief)
 
 function preset_pitch(preset) =
     preset == "Fine"   ? 2 :
