@@ -1,0 +1,19 @@
+# Design docs (kept locally, not versioned — spec + plan)
+docs/
+
+# Shared Python env lives in the parent (~/dev/cad/.venv)
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# macOS
+.DS_Store
+
+# Generated print outputs (keep .step reference files, which aren't matched here)
+*.stl
+*.3mf
+*.amf
+
+# OpenSCAD echo dumps
+*.echo
