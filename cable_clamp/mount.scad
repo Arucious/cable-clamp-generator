@@ -1,5 +1,6 @@
 use <opengrid_snap_lib.scad>
 use <openconnect_lib.scad>
+use <multiconnectSlotDesign.scad>   // plain OpenSCAD, no BOSL2
 include <opengrid_base.scad>
 include <BOSL2/std.scad>
 
@@ -59,5 +60,14 @@ module mount(mount_system, board_type="Lite", snap_shape="Symmetric",
                 cube([_entry_w, _head_y_min - _entry_y, _slot_z], center=true);
         }
     }
-    // Multiboard backend added in later tasks.
+    else if (mount_system == "Multiboard") {
+        plate_w = mb_slots * 25;
+        plate_h = 25;
+        // multiconnectBack: plate at X[0..w], Y[-6.5..0], Z[0..h], item-face at Y=0.
+        // Map to our contract: rotate +Y -> +Z (front face onto z=0 plane, body+slots into -z),
+        // and recenter in X so the socket sits at the origin.
+        translate([-plate_w/2, 0, 0]) rotate([90, 0, 0])
+            multiconnectBack(backWidth=plate_w, backHeight=plate_h, distanceBetweenSlots=25,
+                             dimples=mb_dimples, onRamp=mb_onramp);
+    }
 }
