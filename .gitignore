@@ -17,3 +17,4 @@ __pycache__/
 
 # OpenSCAD echo dumps
 *.echo
+dist/
