@@ -1,0 +1,87 @@
+/*
+  Cable Clamp Generator (openGrid snap / openConnect / Multiboard)
+  Parametric remix for openGrid + Multiboard / Underware cable management.
+
+  Credits:
+    openGrid & Multiconnect standards — David D
+    Multiboard — Jonathan / Keep Making
+    openGrid snap & openConnect OpenSCAD libs — mitufy (CC-BY)
+    MultiConnect OpenSCAD (multiconnectBack) — Chris Schneider / cschneid (CC-BY-NC)
+    Underware — Hands on Katie & BlackjackDuck
+    Original concept "Cable Clamp for OpenGrid / Underware" — MakerWorld user_3607339627 (inspiration)
+  License: CC-BY-NC-SA (non-commercial, share-alike, attribution) — inherited from the bundled libraries.
+*/
+
+use <clamp.scad>
+use <params.scad>
+use <mount.scad>
+include <BOSL2/std.scad>
+
+// Smooth curves on MakerWorld's renderer (tests override $fn for speed).
+$fa = 2; $fs = 0.4;
+
+/* [Mount] */
+Mount_System = "openGrid snap"; // [openGrid snap, openConnect, Multiboard]
+
+/* [openGrid snap] */
+Board_Type = "Lite"; // [Lite, Full]
+Snap_Shape = "Symmetric"; // [Symmetric, Directional]
+
+/* [openConnect] */
+OC_Slots = 1; // [1:2]
+OC_Slide_Direction = "Up"; // [Up, Down, Left, Right]
+OC_Lock = true;
+
+/* [Multiboard] */
+MB_Slots = 1; // [1:3]
+MB_Dimples = true;
+MB_OnRamp = true;
+
+/* [Cable] */
+Cable_Bore_Diameter = 10; // [4:0.5:18]
+
+/* [Thread] */
+Thread_Preset = "openGrid standard"; // [openGrid standard, Fine, Coarse, Custom]
+Thread_Pitch = 3;               // Custom only
+Thread_Profile = "Trapezoidal"; // [Trapezoidal, ISO]  (Custom)
+Thread_Major_Diameter = 0;      // 0 = auto-scale with bore (Custom override)
+Thread_Clearance = 0.4;
+
+/* [Ring Nut] */
+Nut_Height = 9;
+Nut_Grip = "Flats"; // [Flats, Knurl, Wings]
+
+/* [Output] */
+Part = "Body"; // [Body, Ring Nut, Both (preview)]
+
+/* [Hidden] */
+_footprint = mount_face_clear_xy(Mount_System, MB_Slots, OC_Slots);
+_preset    = Thread_Preset == "Custom" ? "Custom" : Thread_Preset;
+_major     = Thread_Preset == "Custom" ? Thread_Major_Diameter : 0;
+_pitch     = Thread_Preset == "Custom" ? Thread_Pitch : preset_pitch(_preset);
+_profile   = Thread_Preset == "Custom" ? Thread_Profile : "Trapezoidal";
+_bore_req  = Cable_Bore_Diameter;
+_bore      = clamped_bore(_bore_req, _footprint, _pitch, _major);
+_socket_h  = max(Nut_Height + 6, 14);
+
+assert(socket_od(_bore, _pitch, _major) <= _footprint + 0.001,
+       "socket exceeds mount footprint after clamping");
+assert(Nut_Height >= 3*_pitch, "Nut_Height too short for >=3 thread turns");
+if (_bore < _bore_req)
+    echo(str("NOTE: Cable_Bore_Diameter clamped from ", _bore_req, " to ", _bore,
+             " mm to fit the ", Mount_System, " footprint (", _footprint, " mm)."));
+
+module _body()
+    clamp_body(mount_system=Mount_System, board_type=Board_Type, snap_shape=Snap_Shape,
+               oc_slots=OC_Slots, oc_slide=OC_Slide_Direction, oc_lock=OC_Lock,
+               mb_slots=MB_Slots, mb_dimples=MB_Dimples, mb_onramp=MB_OnRamp,
+               bore=_bore, preset=_preset, socket_height=_socket_h,
+               clearance=Thread_Clearance, major_override=_major, profile=_profile);
+
+module _nut()
+    ring_nut(bore=_bore, preset=_preset, height=Nut_Height,
+             clearance=Thread_Clearance, major_override=_major, grip=Nut_Grip, profile=_profile);
+
+if (Part == "Body") _body();
+else if (Part == "Ring Nut") _nut();
+else { _body(); right(_footprint + 8) _nut(); }
