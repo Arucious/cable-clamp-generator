@@ -21,8 +21,7 @@ module mount(mount_system, board_type="Lite", snap_shape="Symmetric",
     if (mount_system == "openGrid snap") {
         th = (board_type == "Full") ? OG_STANDARD_THICKNESS : OG_LITE_THICKNESS;
         down(th)
-            base_snap(snapbody_cfg = snap_body_cfg(snap_thickness=th, snap_body_shape=snap_shape),
-                      disable_features=["snap_nub"]);
+            base_snap(snapbody_cfg = snap_body_cfg(snap_thickness=th, snap_body_shape=snap_shape));
     }
     // openConnect + Multiboard backends added in later tasks.
 }

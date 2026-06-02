@@ -8,7 +8,7 @@ include <BOSL2/std.scad>
 def test_opengrid_snap_footprint_and_thickness_lite(tmp_path):
     src = LIB + 'mount(mount_system="openGrid snap", board_type="Lite", snap_shape="Symmetric");'
     m = measure_stl(render_scad(src, {}, tmp_path))
-    assert abs(m["bbox"][0] - 24.8) < 0.2 and abs(m["bbox"][1] - 24.8) < 0.2
+    assert 24.8 <= m["bbox"][0] <= 28.0 and 24.8 <= m["bbox"][1] <= 28.0  # snap width + retention nubs, fits the 28mm cell
     assert abs(m["bbox"][2] - 4.0) < 0.2
 
 def test_opengrid_snap_thickness_full(tmp_path):
