@@ -9,9 +9,9 @@ LIB="${OPENSCAD_LIBDIR:-$HOME/Documents/OpenSCAD/libraries}"
 GEN="cable_clamp/cable_clamp_generator.scad"
 out="build/test_print"; rm -rf "$out"; mkdir -p "$out"
 
-# All-defaults Body + Ring Nut (one openGrid Lite cell, 10mm bore). Manifold backend = MakerWorld parity.
-OPENSCADPATH="$LIB" "$OSB" -o "$out/cable_clamp_body.3mf"     -D 'Part="Body"'      "$GEN"
-OPENSCADPATH="$LIB" "$OSB" -o "$out/cable_clamp_ring_nut.3mf" -D 'Part="Ring Nut"' "$GEN"
+# Body + knurled Ring Nut (one openGrid Lite cell, 10mm bore). Manifold backend = MakerWorld parity.
+OPENSCADPATH="$LIB" "$OSB" -o "$out/cable_clamp_body.3mf"     -D 'Part="Body"'                          "$GEN"
+OPENSCADPATH="$LIB" "$OSB" -o "$out/cable_clamp_ring_nut.3mf" -D 'Part="Ring Nut"' -D 'Nut_Grip="Knurl"' "$GEN"
 
 echo "Test-print files (openGrid snap / Lite / 10mm bore) -> $out"
 ls -1 "$out"
