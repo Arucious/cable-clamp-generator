@@ -26,12 +26,15 @@ def test_clamp_body_renders_on_makerworld_backend(tmp_path):
     m = measure_stl(render_scad(src, {}, tmp_path))   # default backend = Manifold (no raise = renders OK)
     assert m["bbox"][2] > 13.5
 
-def test_clamp_body_cable_channel_open_along_y(tmp_path):
-    src = LIB + ('union(){ clamp_body(mount_system="openGrid snap", board_type="Lite", '
-                 'bore=10, preset="openGrid standard", socket_height=14, clearance=0.4); '
-                 'translate([0,0,5]) cube([6,60,6],center=true); }')
-    m = measure_stl(render_scad(src, {}, tmp_path))
-    assert m["bbox"][1] >= 55   # probe rod protrudes front+back -> channel open
+def test_socket_cable_channel_is_open(tmp_path):
+    # The threaded socket must be hollow (thread bore) AND open along Y (cable channel):
+    # a solid cylinder of the same envelope would have far more volume.
+    src = ('use <thread.scad>\ninclude <BOSL2/std.scad>\n'
+           'threaded_socket(bore=10, preset="openGrid standard", height=14, clearance=0.4);')
+    m = measure_stl(render_scad(src, {}, tmp_path, backend="CGAL"))
+    od = m["bbox"][0]
+    solid_cyl = 3.14159 * (od/2)**2 * 14
+    assert m["volume"] < 0.6 * solid_cyl, "socket not hollow / cable channel not open"
 
 def test_ring_nut_watertight(tmp_path):
     src = LIB + 'ring_nut(bore=10, preset="openGrid standard", height=8, clearance=0.4, grip="Flats");'

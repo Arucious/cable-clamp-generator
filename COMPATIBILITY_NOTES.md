@@ -29,6 +29,7 @@ know where the bodies are buried. The README links to this file.
 - **Risk / watch:** the receiver's real-world mate with a printed openConnect head/screw is **not yet verified by
   print** — confirm fit on a test print. Hand-tuned dims: entry channel 17.4 × 10.6 × 2.9 mm (the 17.4 vs 17.2
   head width is a deliberate +0.2 to avoid coplanar T-junctions).
+- **v1 scope reduction:** in v1 the openConnect mount is a **single slot with a fixed slide-on orientation**. Multi-slot (`OC_Slots`) and selectable slide direction (`OC_Slide_Direction`) were removed because they were not wired through to the geometry; they are a possible future enhancement.
 
 ## 4. openGrid snap T-junctions — watertight verified on CGAL, not Manifold
 - **What:** tests that assert `trimesh.is_watertight` on snap-containing geometry render with `backend="CGAL"`.

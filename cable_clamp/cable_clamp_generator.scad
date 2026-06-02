@@ -28,8 +28,6 @@ Board_Type = "Lite"; // [Lite, Full]
 Snap_Shape = "Symmetric"; // [Symmetric, Directional]
 
 /* [openConnect] */
-OC_Slots = 1; // [1:2]
-OC_Slide_Direction = "Up"; // [Up, Down, Left, Right]
 OC_Lock = true;
 
 /* [Multiboard] */
@@ -55,31 +53,34 @@ Nut_Grip = "Flats"; // [Flats, Knurl, Wings]
 Part = "Body"; // [Body, Ring Nut, Both (preview)]
 
 /* [Hidden] */
-_footprint = mount_face_clear_xy(Mount_System, MB_Slots, OC_Slots);
+_footprint = mount_face_clear_xy(Mount_System, MB_Slots, 1);
 _preset    = Thread_Preset == "Custom" ? "Custom" : Thread_Preset;
 _major     = Thread_Preset == "Custom" ? Thread_Major_Diameter : 0;
 _pitch     = Thread_Preset == "Custom" ? Thread_Pitch : preset_pitch(_preset);
 _profile   = Thread_Preset == "Custom" ? Thread_Profile : "Trapezoidal";
 _bore_req  = Cable_Bore_Diameter;
 _bore      = clamped_bore(_bore_req, _footprint, _pitch, _major);
-_socket_h  = max(Nut_Height + 6, 14);
+_nut_h     = max(Nut_Height, 3 * _pitch);
+_socket_h  = max(_nut_h + 6, 14);
 
 assert(socket_od(_bore, _pitch, _major) <= _footprint + 0.001,
        "socket exceeds mount footprint after clamping");
-assert(Nut_Height >= 3*_pitch, "Nut_Height too short for >=3 thread turns");
+if (Nut_Height < 3*_pitch)
+    echo(str("NOTE: Nut_Height raised from ", Nut_Height, " to ", _nut_h,
+             " mm for >=3 thread turns at pitch ", _pitch, "."));
 if (_bore < _bore_req)
     echo(str("NOTE: Cable_Bore_Diameter clamped from ", _bore_req, " to ", _bore,
              " mm to fit the ", Mount_System, " footprint (", _footprint, " mm)."));
 
 module _body()
     clamp_body(mount_system=Mount_System, board_type=Board_Type, snap_shape=Snap_Shape,
-               oc_slots=OC_Slots, oc_slide=OC_Slide_Direction, oc_lock=OC_Lock,
+               oc_slots=1, oc_lock=OC_Lock,
                mb_slots=MB_Slots, mb_dimples=MB_Dimples, mb_onramp=MB_OnRamp,
                bore=_bore, preset=_preset, socket_height=_socket_h,
                clearance=Thread_Clearance, major_override=_major, profile=_profile);
 
 module _nut()
-    ring_nut(bore=_bore, preset=_preset, height=Nut_Height,
+    ring_nut(bore=_bore, preset=_preset, height=_nut_h,
              clearance=Thread_Clearance, major_override=_major, grip=Nut_Grip, profile=_profile);
 
 if (Part == "Body") _body();

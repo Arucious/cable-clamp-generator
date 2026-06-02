@@ -43,7 +43,7 @@ Print both the Body and Ring Nut for each clamp. No supports are needed for the 
 | `Mount_System` | How it attaches |
 |---|---|
 | `openGrid snap` | Drop-in snap fit to an openGrid board. `Board_Type = Lite` uses 4 mm rail thickness; `Full` uses 6.8 mm. The snap clicks onto the rail and can be slid along it. |
-| `openConnect` | Slides onto an openConnect head (head_type="slot") mounted on a screw in an openGrid board. The clamp slides in from the `OC_Slide_Direction` side and optionally locks with `OC_Lock`. |
+| `openConnect` | Slides onto an openConnect head (head_type="slot") mounted on a screw in an openGrid board. In v1 this is a single slot with a fixed slide-on orientation. `OC_Lock` adds a lock tab to prevent the clamp sliding back off. |
 | `Multiboard` | Slides onto a Multiboard panel via Multiconnect slots. `MB_Slots` sets the number of engagement slots (1–3). `MB_Dimples` adds retention dimples; `MB_OnRamp` adds the on-ramp chamfer for easier insertion. |
 
 ---
@@ -69,9 +69,9 @@ All parameters are available in the OpenSCAD customizer. Defaults shown below.
 
 | Parameter | Default | Description |
 |---|---|---|
-| `OC_Slots` | `1` | Number of openConnect engagement slots (1–2) |
-| `OC_Slide_Direction` | `"Up"` | Direction the clamp slides onto the head: `Up`, `Down`, `Left`, `Right` |
 | `OC_Lock` | `true` | Add a lock tab that prevents the clamp sliding back off |
+
+In v1, the openConnect mount uses a single slot with a fixed slide-on orientation. Multi-slot and selectable slide direction are not user-adjustable in this release.
 
 ### Multiboard
 
@@ -118,7 +118,7 @@ All parameters are available in the OpenSCAD customizer. Defaults shown below.
 - **Snap fit too stiff or too loose:** confirm with a test print. The openGrid snap geometry follows the mitufy library's standard dimensions — the only tuning available is `Board_Type` (Lite vs Full).
 - **openConnect fit:** the openConnect receiver geometry is derived from `openconnect_head(head_type="slot")` and has not yet been verified by a print against an actual openConnect head/screw assembly. Do a test fit on a short print before committing to a full cable run.
 - **Multiboard slot fit:** uses cschneid's `multiconnectSlotDesign.scad` geometry. If insertion or retention is off, try toggling `MB_Dimples` or adjusting `MB_Slots`.
-- **Bore clamped warning:** if you see `NOTE: Cable_Bore_Diameter clamped from X to Y mm` in the console, the bore was reduced to fit within the mount footprint. Switch to a larger mount (`MB_Slots`, `OC_Slots`) or reduce the bore.
+- **Bore clamped warning:** if you see `NOTE: Cable_Bore_Diameter clamped from X to Y mm` in the console, the bore was reduced to fit within the mount footprint. Switch to a larger mount (e.g. `MB_Slots` for Multiboard) or reduce the bore.
 
 ---
 

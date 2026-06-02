@@ -7,7 +7,7 @@ include <BOSL2/std.scad>
 // In-plane clear footprint (mm) the socket must fit within, per mount.
 function mount_face_clear_xy(mount_system, mb_slots=1, oc_slots=1) =
     mount_system == "Multiboard" ? mb_slots * 25 :
-    mount_system == "openConnect" ? max(OG_SNAP_WIDTH, oc_slots*OG_SNAP_WIDTH) :
+    mount_system == "openConnect" ? OG_SNAP_WIDTH :
     OG_SNAP_WIDTH;
 
 // How far the attachment extends into -z (informational / asserts).
