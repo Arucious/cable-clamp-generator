@@ -65,8 +65,8 @@ _nut_h     = max(Nut_Height, 3 * _pitch);
 // barrel taller than the ring (so it can travel down) AND tall enough for the cable channel
 _socket_h  = max(_nut_h + 6, 14, _bore + 4);
 
-assert(ring_od(_bore, _pitch, Thread_Clearance, _major) <= _footprint + 0.001,
-       "ring nut exceeds mount footprint after clamping");
+assert(part_od(_bore, _pitch, Thread_Clearance, _major) <= _footprint + 0.001,
+       "clamp (ring/flare) exceeds mount footprint after clamping");
 if (Nut_Height < 3*_pitch)
     echo(str("NOTE: Nut_Height raised from ", Nut_Height, " to ", _nut_h,
              " mm for >=3 thread turns at pitch ", _pitch, "."));

@@ -12,11 +12,12 @@ def test_generator_ring_nut(tmp_path):
 
 def test_generator_clamps_oversize_bore_without_error(tmp_path):
     # bore beyond the openGrid cell ceiling must be clamped, not error out. Warnings OFF so we
-    # measure the pure clamped geometry. The snap nubs extend the envelope to ~25.59 mm regardless
-    # of bore; threshold 26.1 — well below unclamped bore=40 (~47 mm).
+    # measure the pure clamped geometry. The clamp accounts for the base flare too (part_od), so
+    # nothing exceeds the snap envelope (~25.59 mm). Tight tolerance catches a flare overhang.
     m = measure_stl(render_file(GEN, {"Part": "Body", "Cable_Bore_Diameter": 40,
                                       "Preview_Warnings": False}, tmp_path))
-    assert m["bbox"][0] <= 25.59 + 0.5
+    assert m["bbox"][0] <= 25.59 + 0.15, "clamped part (incl. base flare) overhangs the cell"
+    assert m["bbox"][1] <= 25.59 + 0.15
 
 def test_generator_shows_warning_label_when_clamped(tmp_path):
     # With warnings on (default), an over-size bore floats a wide red text label above the part,

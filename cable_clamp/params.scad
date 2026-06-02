@@ -26,12 +26,20 @@ function thread_depth(pitch) = 0.6 * pitch;
 function thread_major(bore, pitch, major_override=0) =
     major_override > 0 ? major_override : bore + 2 * BARREL_WALL + 2 * thread_depth(pitch);
 
-// Ring-nut OUTER diameter — must fit within the mount footprint.
+// Ring-nut OUTER diameter (used for the nut geometry).
 function ring_od(bore, pitch, clearance=0.4, major_override=0) =
     thread_major(bore, pitch, major_override) + 2 * clearance + 2 * RING_WALL;
 
-// Clamp the bore so the ring fits within `footprint`; returns the usable bore.
+// Largest radial allowance beyond the barrel thread crest: whichever sticks out further —
+// the ring (wall + clearance) or the base flare. This is what must fit the cell.
+function outer_allow(clearance) = max(clearance + RING_WALL, barrel_flare());
+
+// The part's overall OUTER diameter (ring OR flare, whichever is wider) — must fit the footprint.
+function part_od(bore, pitch, clearance=0.4, major_override=0) =
+    thread_major(bore, pitch, major_override) + 2 * outer_allow(clearance);
+
+// Clamp the bore so the WHOLE part (ring and flare) fits within `footprint`; returns the usable bore.
 function clamped_bore(bore, footprint, pitch, clearance=0.4, major_override=0) =
-    ring_od(bore, pitch, clearance, major_override) <= footprint
+    part_od(bore, pitch, clearance, major_override) <= footprint
         ? bore
-        : footprint - 2*RING_WALL - 2*clearance - 2*BARREL_WALL - 2*thread_depth(pitch);
+        : footprint - 2*outer_allow(clearance) - 2*BARREL_WALL - 2*thread_depth(pitch);
