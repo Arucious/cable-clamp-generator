@@ -122,6 +122,21 @@ In v1, the openConnect mount uses a single slot with a fixed slide-on orientatio
 
 ---
 
+## Publishing to MakerWorld
+
+MakerWorld's Parametric Model Maker accepts **one `.scad` file** and only the libraries it
+pre-installs (BOSL2). It does **not** accept dependency/`include` `.scad` uploads. So you upload the
+flattened single file, not the `cable_clamp/` module set:
+
+- **Upload `cable_clamp_generator_single.scad`** (at the repo root). It inlines every module and
+  vendored library; only `include <BOSL2/...>` remains, which MakerWorld provides.
+- Regenerate it after editing anything in `cable_clamp/`:  `python scripts/build_single_file.py`
+  (it renders identically to the multi-file build — verified with BOSL2 as the only library on the path).
+- Create a new MakerWorld model, upload that `.scad` instead of a `.3mf`, and a **Customize** button appears.
+- Do **not** upload BOSL2 or the `cable_clamp/*.scad` module files.
+
+---
+
 ## Compatibility notes
 
 Key deviations from upstream libraries — see [`../COMPATIBILITY_NOTES.md`](../COMPATIBILITY_NOTES.md) for full detail:

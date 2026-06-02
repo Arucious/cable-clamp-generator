@@ -57,3 +57,19 @@ know where the bodies are buried. The README links to this file.
   (cschneid) `.scad` files are bundled.
 - **Risk / watch:** if MakerWorld bumps its OpenSCAD/BOSL2, re-run the test suite against the new versions before
   re-publishing — the mitufy openGrid libs are the most BOSL2-version-sensitive piece.
+
+## 7. Single-file build required for MakerWorld (no dependency .scad uploads)
+- **What:** MakerWorld's Parametric Model Maker accepts ONE `.scad` and only its pre-installed libraries
+  (BOSL2); it does NOT accept user dependency/`include` `.scad` files (the v0.8.0 "file upload" is for
+  PNG/SVG/STL assets, and "include support" is a standing, unfilled feature request on the Bambu forum).
+- **Why it matters:** the dev source is multi-file (`cable_clamp/*.scad` + vendored libs). For MakerWorld it must
+  be flattened into one self-contained file. `scripts/build_single_file.py` does this — concatenates everything,
+  strips local `use/include` (inlined), keeps only `include <BOSL2/...>`, and (crucially) emits the customizer
+  params at the top but the derived `_` vars + asserts + geometry at the BOTTOM. **OpenSCAD evaluates top-level
+  assignments in textual order**, so a derived var that calls a function needing a global must come AFTER that
+  global's definition — otherwise the global reads as `undef` (this exact bug failed the footprint assert until
+  the bottom-placement was fixed). Output: `cable_clamp_generator_single.scad` (committed at repo root).
+- **Verification:** parity-checked — the single file renders identical volumes to the multi-file build with ONLY
+  BOSL2 on `OPENSCADPATH` (true MakerWorld simulation), across all mount/bore/part configs.
+- **Risk / watch:** the single file is a generated artifact; edit the sources in `cable_clamp/` and re-run the
+  build script — don't hand-edit the flattened file.
