@@ -17,17 +17,14 @@ module _thread_rod(d, l, pitch, profile, internal, slop=0) {
 module threaded_socket(bore, preset, height, clearance=0.4, major_override=0, profile="Trapezoidal") {
     p     = preset_pitch(preset);
     major = thread_major(bore, p, major_override);   // external thread crest OD
-    fl = barrel_flare();
     difference() {
-        union() {
-            _thread_rod(d=major, l=height, pitch=p, profile=profile, internal=false);
-            // conical buttress at the base: ties each threaded half firmly to the main body below,
-            // without putting a floor across the cable channel.
-            rotate_extrude($fn=72)
-                polygon([[major/2 - 0.01, 0], [major/2 + fl, 0], [major/2 - 0.01, fl]]);
-        }
-        // cable channel: fully open (top + front/back + down to the base) — cuts the flare too.
-        cuboid([bore, major + 2*fl + 4, height + fl + 2], anchor=BOTTOM);
+        _thread_rod(d=major, l=height, pitch=p, profile=profile, internal=false);
+        // cable channel: open top + front/back, seated on a modest floor (barrel_base) with a
+        // generous concave fillet where it meets the finger walls — an internal gusset that
+        // reinforces the thin finger-to-base connection on the load-bearing inner side.
+        // Fillet capped at half the channel width so it stays valid for small bores.
+        fr = max(0, min(barrel_fillet(), bore/2 - 0.5));
+        up(barrel_base()) cuboid([bore, major+2, height], anchor=BOTTOM, rounding=fr, edges=BOTTOM);
     }
 }
 

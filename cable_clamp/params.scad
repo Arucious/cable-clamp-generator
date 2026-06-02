@@ -11,9 +11,11 @@ MIN_WALL      = 0.8;    // OG_MIN_WALL_WIDTH
 BARREL_WALL   = 1.6;    // finger wall: cable channel -> barrel thread root
 RING_WALL     = 1.6;    // ring wall: internal thread crest -> knurled outer surface
 // Functions (not bare constants) so `use <params.scad>` imports them into thread.scad + generator.
-// barrel_flare: a conical buttress at the barrel base that ties each threaded half down to the main
-// body (snap/mount) — the channel stays fully open (no solid floor); the strength comes from the root.
-function barrel_flare() = 2.5;   // radial+vertical size of the base buttress (mm)
+// The cable channel sits on a modest floor and meets the finger walls via a generous CONCAVE FILLET
+// (an internal gusset) — material added right at the thin finger-to-base connection, on the
+// load-bearing inner side. No chunky base, no outer flare.
+function barrel_base()   = 1.6;   // modest channel floor joining the halves (mm)
+function barrel_fillet() = 3.0;   // internal gusset fillet radius at the finger roots (mm)
 
 function preset_pitch(preset) =
     preset == "Fine"   ? 2 :
@@ -30,9 +32,9 @@ function thread_major(bore, pitch, major_override=0) =
 function ring_od(bore, pitch, clearance=0.4, major_override=0) =
     thread_major(bore, pitch, major_override) + 2 * clearance + 2 * RING_WALL;
 
-// Largest radial allowance beyond the barrel thread crest: whichever sticks out further —
-// the ring (wall + clearance) or the base flare. This is what must fit the cell.
-function outer_allow(clearance) = max(clearance + RING_WALL, barrel_flare());
+// Radial allowance beyond the barrel thread crest = the ring (wall + clearance). The internal
+// fillet/floor adds no outer diameter, so the ring is the binding outer extent.
+function outer_allow(clearance) = clearance + RING_WALL;
 
 // The part's overall OUTER diameter (ring OR flare, whichever is wider) — must fit the footprint.
 function part_od(bore, pitch, clearance=0.4, major_override=0) =

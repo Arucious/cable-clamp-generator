@@ -62,8 +62,9 @@ _profile   = Thread_Preset == "Custom" ? Thread_Profile : "Trapezoidal";
 _bore_req  = Cable_Bore_Diameter;
 _bore      = clamped_bore(_bore_req, _footprint, _pitch, Thread_Clearance, _major);
 _nut_h     = max(Nut_Height, 3 * _pitch);
-// barrel taller than the ring (so it can travel down) AND tall enough for the cable channel
-_socket_h  = max(_nut_h + 6, 14, _bore + 4);
+// barrel taller than the ring (so it can travel down) AND tall enough that the cable channel
+// fits above the modest floor
+_socket_h  = max(_nut_h + 6, 14, _bore + barrel_base() + 2);
 
 assert(part_od(_bore, _pitch, Thread_Clearance, _major) <= _footprint + 0.001,
        "clamp (ring/flare) exceeds mount footprint after clamping");
