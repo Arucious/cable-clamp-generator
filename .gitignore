@@ -21,3 +21,4 @@ dist/
 
 # Personal publish-workflow notes (kept local)
 MAKERWORLD.md
+build/

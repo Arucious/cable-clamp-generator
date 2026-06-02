@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Export a ready-to-print TEST clamp with sensible defaults:
+#   openGrid snap, Lite board (4mm), 10mm cable bore, openGrid-standard thread, Flats grip.
+# Produces separate 3MF files for the Body and the Ring Nut (print both).
+set -euo pipefail
+cd "$(dirname "$0")/.."
+OSB="${OPENSCAD_BIN:-/Applications/OpenSCAD-2026.01.14.app/Contents/MacOS/OpenSCAD}"
+LIB="${OPENSCAD_LIBDIR:-$HOME/Documents/OpenSCAD/libraries}"
+GEN="cable_clamp/cable_clamp_generator.scad"
+out="build/test_print"; rm -rf "$out"; mkdir -p "$out"
+
+# All-defaults Body + Ring Nut (one openGrid Lite cell, 10mm bore). Manifold backend = MakerWorld parity.
+OPENSCADPATH="$LIB" "$OSB" -o "$out/cable_clamp_body.3mf"     -D 'Part="Body"'      "$GEN"
+OPENSCADPATH="$LIB" "$OSB" -o "$out/cable_clamp_ring_nut.3mf" -D 'Part="Ring Nut"' "$GEN"
+
+echo "Test-print files (openGrid snap / Lite / 10mm bore) -> $out"
+ls -1 "$out"
