@@ -101,8 +101,8 @@ In v1, the openConnect mount uses a single slot with a fixed slide-on orientatio
 
 | Parameter | Default | Description |
 |---|---|---|
-| `Nut_Height` | `9` | Threaded **insertion** length in mm (the part that screws into the socket). Auto-floored to 3× `Thread_Pitch` for ≥3 thread turns. The knurled grip body sits above this and is sized automatically. |
-| `Nut_Grip` | `"Flats"` | Grip style over the **full exposed nut body**: `Flats` (flat sides), `Knurl` (diamond-knurled), or `Wings` (extended grip tabs) |
+| `Nut_Height` | `9` | Height in mm of the ring nut — the hollow, internally-threaded ring that screws **around** the body's externally-threaded barrel and compresses it onto the cable. Auto-floored to 3× `Thread_Pitch` for ≥3 thread turns. |
+| `Nut_Grip` | `"Flats"` | Grip style over the ring's **outer** surface: `Flats` (flat sides), `Knurl` (diamond-knurled), or `Wings` (extended grip tabs) |
 
 ### Output
 

@@ -12,30 +12,30 @@ module _thread_rod(d, l, pitch, profile, internal, slop=0) {
                      bevel=!internal, $slop=slop, anchor=BOTTOM);
 }
 
-// Threaded socket: cylinder with an INTERNAL thread, open along Y for the cable. Base at z=0.
+// Body BARREL: an EXTERNALLY-threaded post, split by the cable channel into fingers. Base at z=0.
+// The ring nut screws down around this and compresses the fingers onto the cable.
 module threaded_socket(bore, preset, height, clearance=0.4, major_override=0, profile="Trapezoidal") {
     p     = preset_pitch(preset);
-    major = thread_major(bore, p, major_override);
-    od    = socket_od(bore, p, major_override);
+    major = thread_major(bore, p, major_override);   // external thread crest OD
     difference() {
-        cylinder(h=height, d=od);
-        up(-0.5) _thread_rod(d=major, l=height+1, pitch=p, profile=profile, internal=true, slop=clearance);
-        up(-0.5) cuboid([bore, od+2, bore], anchor=BOTTOM);   // open Y cable channel
+        _thread_rod(d=major, l=height, pitch=p, profile=profile, internal=false);
+        // cable channel along Y; starts above a thin base web so the fingers stay joined as a
+        // collet (and the cable rests just above the mount), and runs out the top.
+        up(0.8) cuboid([bore, major+2, height], anchor=BOTTOM);
     }
 }
 
-// Externally-threaded plug: a threaded INSERTION zone (engages the socket) topped by a
-// full-height GRIP BODY — the entire exposed cylinder is the grip (knurled/flats/wings).
-// `height` is the threaded insertion length; the grip body is the graspable part above it.
+// RING NUT: a hollow, INTERNALLY-threaded ring with a grip (knurl/flats/wings) on its OUTER
+// surface. Threads onto and around the barrel's external thread. `height` is the ring height.
 module nut_plug(bore, preset, height, clearance=0.4, major_override=0, grip="Flats", profile="Trapezoidal") {
-    p          = preset_pitch(preset);
-    major      = thread_major(bore, p, major_override);
-    od         = socket_od(bore, p, major_override);
-    grip_h     = max(height, 10);   // exposed grip body — the dominant, graspable part
-    grip_d     = od + 2;            // overhangs the socket rim (acts as a stop + leverage)
-    union() {
-        _thread_rod(d=major - 2*clearance, l=height, pitch=p, profile=profile, internal=false);
-        up(height - 0.01) _grip(grip, d=grip_d, h=grip_h + 0.01);   // small overlap, no seam
+    p     = preset_pitch(preset);
+    major = thread_major(bore, p, major_override);
+    ro    = ring_od(bore, p, clearance, major_override);
+    difference() {
+        _grip(grip, d=ro, h=height);                          // knurled/flats/wings outer body
+        // internal thread cavity (+clearance so it spins around the barrel) — goes through = hollow
+        up(-0.5) _thread_rod(d=major + 2*clearance, l=height+1, pitch=p,
+                             profile=profile, internal=true, slop=clearance);
     }
 }
 
