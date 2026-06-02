@@ -18,3 +18,6 @@ __pycache__/
 # OpenSCAD echo dumps
 *.echo
 dist/
+
+# Personal publish-workflow notes (kept local)
+MAKERWORLD.md
