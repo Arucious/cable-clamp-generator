@@ -17,12 +17,17 @@ module _thread_rod(d, l, pitch, profile, internal, slop=0) {
 module threaded_socket(bore, preset, height, clearance=0.4, major_override=0, profile="Trapezoidal") {
     p     = preset_pitch(preset);
     major = thread_major(bore, p, major_override);   // external thread crest OD
+    fl = barrel_flare();
     difference() {
-        _thread_rod(d=major, l=height, pitch=p, profile=profile, internal=false);
-        // cable channel: open at the top + front/back, but seated on a solid BARREL_BASE that joins
-        // the two halves (retention design needs no flex), with filleted root corners for strength.
-        up(barrel_base()) cuboid([bore, major+2, height], anchor=BOTTOM,
-                                 rounding=barrel_fillet(), edges=BOTTOM);
+        union() {
+            _thread_rod(d=major, l=height, pitch=p, profile=profile, internal=false);
+            // conical buttress at the base: ties each threaded half firmly to the main body below,
+            // without putting a floor across the cable channel.
+            rotate_extrude($fn=72)
+                polygon([[major/2 - 0.01, 0], [major/2 + fl, 0], [major/2 - 0.01, fl]]);
+        }
+        // cable channel: fully open (top + front/back + down to the base) — cuts the flare too.
+        cuboid([bore, major + 2*fl + 4, height + fl + 2], anchor=BOTTOM);
     }
 }
 

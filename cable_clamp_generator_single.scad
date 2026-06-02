@@ -68,10 +68,10 @@ OG_SNAP_WIDTH = 24.8;   // openGrid snap footprint (also the ring-OD ceiling for
 MIN_WALL      = 0.8;    // OG_MIN_WALL_WIDTH
 BARREL_WALL   = 1.6;    // finger wall: cable channel -> barrel thread root
 RING_WALL     = 1.6;    // ring wall: internal thread crest -> knurled outer surface
-// barrel base/fillet are functions (not bare constants) so `use <params.scad>` imports them into
-// thread.scad and the generator — `use` does NOT import top-level variables.
-function barrel_base()   = 3.0;   // solid barrel base joining the two halves below the channel (strength)
-function barrel_fillet() = 1.2;   // fillet radius at the channel-to-base (finger-root) corners (stress relief)
+// Functions (not bare constants) so `use <params.scad>` imports them into thread.scad + generator.
+// barrel_flare: a conical buttress at the barrel base that ties each threaded half down to the main
+// body (snap/mount) — the channel stays fully open (no solid floor); the strength comes from the root.
+function barrel_flare() = 2.5;   // radial+vertical size of the base buttress (mm)
 
 function preset_pitch(preset) =
     preset == "Fine"   ? 2 :
@@ -112,12 +112,17 @@ module _thread_rod(d, l, pitch, profile, internal, slop=0) {
 module threaded_socket(bore, preset, height, clearance=0.4, major_override=0, profile="Trapezoidal") {
     p     = preset_pitch(preset);
     major = thread_major(bore, p, major_override);   // external thread crest OD
+    fl = barrel_flare();
     difference() {
-        _thread_rod(d=major, l=height, pitch=p, profile=profile, internal=false);
-        // cable channel: open at the top + front/back, but seated on a solid BARREL_BASE that joins
-        // the two halves (retention design needs no flex), with filleted root corners for strength.
-        up(barrel_base()) cuboid([bore, major+2, height], anchor=BOTTOM,
-                                 rounding=barrel_fillet(), edges=BOTTOM);
+        union() {
+            _thread_rod(d=major, l=height, pitch=p, profile=profile, internal=false);
+            // conical buttress at the base: ties each threaded half firmly to the main body below,
+            // without putting a floor across the cable channel.
+            rotate_extrude($fn=72)
+                polygon([[major/2 - 0.01, 0], [major/2 + fl, 0], [major/2 - 0.01, fl]]);
+        }
+        // cable channel: fully open (top + front/back + down to the base) — cuts the flare too.
+        cuboid([bore, major + 2*fl + 4, height + fl + 2], anchor=BOTTOM);
     }
 }
 
@@ -1890,9 +1895,8 @@ _profile   = Thread_Preset == "Custom" ? Thread_Profile : "Trapezoidal";
 _bore_req  = Cable_Bore_Diameter;
 _bore      = clamped_bore(_bore_req, _footprint, _pitch, Thread_Clearance, _major);
 _nut_h     = max(Nut_Height, 3 * _pitch);
-// barrel taller than the ring (so it can travel down) AND tall enough that the cable channel
-// still fits above the thicker solid base
-_socket_h  = max(_nut_h + 6, 14, _bore + barrel_base() + 2);
+// barrel taller than the ring (so it can travel down) AND tall enough for the cable channel
+_socket_h  = max(_nut_h + 6, 14, _bore + 4);
 
 assert(ring_od(_bore, _pitch, Thread_Clearance, _major) <= _footprint + 0.001,
        "ring nut exceeds mount footprint after clamping");
