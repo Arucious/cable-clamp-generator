@@ -20,3 +20,13 @@ def test_mount_attachment_is_below_z0(tmp_path):
     src = LIB + 'mount(mount_system="openGrid snap", board_type="Lite", snap_shape="Symmetric");'
     m = measure_stl(render_scad(src, {}, tmp_path))
     assert m["bounds"][1][2] <= 0.05   # mating face at z=0 (max z ~ 0)
+
+def test_openconnect_mount_within_cell_and_below_z0(tmp_path):
+    src = LIB + 'mount(mount_system="openConnect", oc_slots=1, oc_slide="Up", oc_lock=true);'
+    m = measure_stl(render_scad(src, {}, tmp_path))
+    assert m["bbox"][0] <= 24.8 + 0.2 and m["bbox"][1] <= 24.8 + 0.2   # fits a cell
+    assert m["bounds"][1][2] <= 0.05                                    # mating face at z=0
+    assert m["watertight"] is True
+    # the openConnect slot must actually be carved (a real receiver, not a solid plate):
+    solid = m["bbox"][0] * m["bbox"][1] * m["bbox"][2]
+    assert m["volume"] < 0.97 * solid, "no slot cavity present — receiver not carved"
