@@ -1,0 +1,3 @@
+trimesh>=4.0
+numpy
+pytest>=8.0
